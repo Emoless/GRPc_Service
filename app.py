@@ -1,17 +1,9 @@
 from flask import Flask, render_template, request
-import psycopg2
+import grpc
+import roster_pb2
+import roster_pb2_grpc
 
 app = Flask(__name__)
-
-# Database connection configuration
-conn = psycopg2.connect(
-    dbname="GRPC",
-    user="postgres",
-    password="1111",
-    host="localhost",
-    port="5432"
-)
-cursor = conn.cursor()
 
 @app.route('/')
 def index():
@@ -20,7 +12,7 @@ def index():
 
 @app.route('/players', methods=['POST'])
 def get_players():
-    """Handle form submission, query the database, and display results."""
+    """Handle form submission and fetch players via gRPC."""
     position = request.form.get('position')
     birth_year_from = request.form.get('birth_year_from')
     birth_year_to = request.form.get('birth_year_to')
@@ -29,33 +21,22 @@ def get_players():
     height_from = request.form.get('height_from')
     height_to = request.form.get('height_to')
 
-    query = "SELECT * FROM roster WHERE 1=1"
-    params = []
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = roster_pb2_grpc.RosterServiceStub(channel)
+        filter_request = roster_pb2.PlayerFilter(
+            position=position if position else "",
+            birth_year_from=int(birth_year_from) if birth_year_from else 0,
+            birth_year_to=int(birth_year_to) if birth_year_to else 0,
+            weight_from=int(weight_from) if weight_from else 0,
+            weight_to=int(weight_to) if weight_to else 0,
+            height_from=int(height_from) if height_from else 0,
+            height_to=int(height_to) if height_to else 0
+        )
+        response = stub.GetPlayers(filter_request)
+        players = [(p.playerid, p.jersey, p.fname, p.sname, p.position, 
+                    p.birthday, p.weight, p.height, p.birthcity, p.birthstate) 
+                   for p in response.players]
 
-    if position:
-        query += " AND position = %s"
-        params.append(position)
-    if birth_year_from:
-        query += " AND EXTRACT(YEAR FROM birthday) >= %s"
-        params.append(birth_year_from)
-    if birth_year_to:
-        query += " AND EXTRACT(YEAR FROM birthday) <= %s"
-        params.append(birth_year_to)
-    if weight_from:
-        query += " AND weight >= %s"
-        params.append(weight_from)
-    if weight_to:
-        query += " AND weight <= %s"
-        params.append(weight_to)
-    if height_from:
-        query += " AND height >= %s"
-        params.append(height_from)
-    if height_to:
-        query += " AND height <= %s"
-        params.append(height_to)
-
-    cursor.execute(query, params)
-    players = cursor.fetchall()
     return render_template('players.html', players=players)
 
 if __name__ == '__main__':
