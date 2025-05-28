@@ -26,6 +26,20 @@
             background-color: #ffffcc;
             outline: none;
         }
+
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -61,6 +75,7 @@
         </tr>
         {% endfor %}
     </table>
+    <a href="/clubs">Назад к списку клубов</a>
     <script>
         function savePlayer(playerid, button) {
             var row = button.parentNode.parentNode;
@@ -76,7 +91,7 @@
                 height: cells[7].innerText,
                 birthcity: cells[8].innerText,
                 birthstate: cells[9].innerText,
-                ClubID: '{{ club_id }}'
+                clubid: '{{ club_id }}'
             };
             $.ajax({
                 type: 'POST',
@@ -84,13 +99,13 @@
                 data: playerData,
                 success: function (response) {
                     if (response.status === 'success') {
-                        alert('Игрок успешно обновлен');
+                        alert('Игрок успешно обновлён');
                     } else {
-                        alert('Ошибка при обновлении игрока');
+                        alert('Ошибка при обновлении игрока: ' + (response.error || 'Неизвестная ошибка'));
                     }
                 },
-                error: function () {
-                    alert('Ошибка связи с сервером');
+                error: function (xhr, status, error) {
+                    alert('Ошибка связи с сервером: ' + error);
                 }
             });
         }

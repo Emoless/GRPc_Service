@@ -3,14 +3,42 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Клубы</title>
+    <title>Список клубов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
     <h1>Список клубов</h1>
     <ul>
         {% for club in clubs %}
-        <li><a href="/club/{{ club.ClubID }}">{{ club.ClubName }}</a></li>
+        <li><a href="/club/{{ club.clubid }}">{{ club.clubname }}</a></li>
         {% endfor %}
     </ul>
 </body>
