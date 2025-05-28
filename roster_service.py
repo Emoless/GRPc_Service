@@ -3,66 +3,72 @@ from concurrent import futures
 import roster_pb2
 import roster_pb2_grpc
 import psycopg2
+import psycopg2.extras
 
 class RosterService(roster_pb2_grpc.RosterServiceServicer):
     def __init__(self):
+        # Connect to your PostgreSQL database
         self.conn = psycopg2.connect(
-            dbname="GRPC",
-            user="postgres",
-            password="1111",
-            host="localhost",
-            port="5432"
+            dbname='GRPC',      # Replace with your database name
+            user='postgres',        # Replace with your username
+            password='1111',    # Replace with your password
+            host='localhost',       # Replace with your host
+            port='5432'             # Replace with your port
         )
-        self.cursor = self.conn.cursor()
+        self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    def GetPlayers(self, request, context):
-        """Handle gRPC request to fetch players based on filters."""
-        query = "SELECT * FROM roster WHERE 1=1"
-        params = []
+    def GetClubs(self, request, context):
+        self.cursor.execute("SELECT clubid, clubname, foundedyear, city, country FROM clubs")
+        clubs = [roster_pb2.Club(
+            ClubID=row['clubid'],
+            ClubName=row['clubname'],
+            FoundedYear=row['foundedyear'] if row['foundedyear'] is not None else 0,
+            City=row['city'] if row['city'] is not None else '',
+            Country=row['country'] if row['country'] is not None else ''
+        ) for row in self.cursor.fetchall()]
+        return roster_pb2.ClubList(clubs=clubs)
 
-        if request.position:
-            query += " AND position = %s"
-            params.append(request.position)
-        if request.birth_year_from:
-            query += " AND EXTRACT(YEAR FROM birthday) >= %s"
-            params.append(request.birth_year_from)
-        if request.birth_year_to:
-            query += " AND EXTRACT(YEAR FROM birthday) <= %s"
-            params.append(request.birth_year_to)
-        if request.weight_from:
-            query += " AND weight >= %s"
-            params.append(request.weight_from)
-        if request.weight_to:
-            query += " AND weight <= %s"
-            params.append(request.weight_to)
-        if request.height_from:
-            query += " AND height >= %s"
-            params.append(request.height_from)
-        if request.height_to:
-            query += " AND height <= %s"
-            params.append(request.height_to)   
-        
-        print("Received request:", request)
+    # Example: If you have GetPlayersByClub
+    def GetPlayersByClub(self, request, context):
+        self.cursor.execute(
+            "SELECT playerid, jersey, fname, sname, position, birthday, weight, height, birthcity, birthstate, clubid "
+            "FROM roster WHERE clubid = %s OR (clubid IS NULL AND %s IS NULL)",
+            (request.ClubID, request.ClubID)
+        )
+        players = [roster_pb2.Player(
+            playerid=row['playerid'],
+            jersey=row['jersey'] if row['jersey'] is not None else 0,
+            fname=row['fname'] if row['fname'] is not None else '',
+            sname=row['sname'] if row['sname'] is not None else '',
+            position=row['position'] if row['position'] is not None else '',
+            birthday=str(row['birthday']) if row['birthday'] is not None else '',
+            weight=row['weight'] if row['weight'] is not None else 0,
+            height=row['height'] if row['height'] is not None else 0,
+            birthcity=row['birthcity'] if row['birthcity'] is not None else '',
+            birthstate=row['birthstate'] if row['birthstate'] is not None else '',
+            ClubID=row['clubid'] if row['clubid'] is not None else ''
+        ) for row in self.cursor.fetchall()]
+        return roster_pb2.PlayerList(players=players)
 
-        self.cursor.execute(query, params)
-        players = self.cursor.fetchall()
-
-        player_list = roster_pb2.PlayerList()
-        for player in players:
-            p = roster_pb2.Player(
-                playerid=player[0],
-                jersey=player[1],
-                fname=player[2],
-                sname=player[3],
-                position=player[4],
-                birthday=str(player[5]),
-                weight=player[6],
-                height=player[7],
-                birthcity=player[8],
-                birthstate=player[9]
-            )
-            player_list.players.append(p)
-        return player_list
+    # Example: If you have UpdatePlayer
+    def UpdatePlayer(self, request, context):
+        try:
+            self.cursor.execute("""
+                UPDATE roster
+                SET jersey = %s, fname = %s, sname = %s, position = %s, birthday = %s,
+                    weight = %s, height = %s, birthcity = %s, birthstate = %s, clubid = %s
+                WHERE playerid = %s
+            """, (
+                request.jersey, request.fname, request.sname, request.position, request.birthday,
+                request.weight, request.height, request.birthcity, request.birthstate, request.ClubID,
+                request.playerid
+            ))
+            self.conn.commit()
+            return roster_pb2.UpdatePlayerResponse(success=True)
+        except Exception as e:
+            print(f"Ошибка обновления игрока: {e}")
+            self.conn.rollback()
+            return roster_pb2.UpdatePlayerResponse(success=False)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

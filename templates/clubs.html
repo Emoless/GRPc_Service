@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Клубы</title>
+</head>
+
+<body>
+    <h1>Список клубов</h1>
+    <ul>
+        {% for club in clubs %}
+        <li><a href="/club/{{ club.ClubID }}">{{ club.ClubName }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>

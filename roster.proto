@@ -1,13 +1,15 @@
 syntax = "proto3";
 
-message PlayerFilter {
-    string position = 1;
-    int32 birth_year_from = 2;
-    int32 birth_year_to = 3;
-    int32 weight_from = 4;
-    int32 weight_to = 5;
-    int32 height_from = 6;
-    int32 height_to = 7;
+message Club {
+    string ClubID = 1;
+    string ClubName = 2;
+    int32 FoundedYear = 3;
+    string City = 4;
+    string Country = 5;
+}
+
+message ClubList {
+    repeated Club clubs = 1;
 }
 
 message Player {
@@ -21,12 +23,39 @@ message Player {
     int32 height = 8;
     string birthcity = 9;
     string birthstate = 10;
+    string ClubID = 11;
 }
 
 message PlayerList {
     repeated Player players = 1;
 }
 
+message GetClubsRequest {}
+
+message GetPlayersByClubRequest {
+    string ClubID = 1;
+}
+
+message UpdatePlayerRequest {
+    string playerid = 1;
+    int32 jersey = 2;
+    string fname = 3;
+    string sname = 4;
+    string position = 5;
+    string birthday = 6;
+    int32 weight = 7;
+    int32 height = 8;
+    string birthcity = 9;
+    string birthstate = 10;
+    string ClubID = 11;
+}
+
+message UpdatePlayerResponse {
+    bool success = 1;
+}
+
 service RosterService {
-    rpc GetPlayers(PlayerFilter) returns (PlayerList) {}
+    rpc GetClubs(GetClubsRequest) returns (ClubList) {}
+    rpc GetPlayersByClub(GetPlayersByClubRequest) returns (PlayerList) {}
+    rpc UpdatePlayer(UpdatePlayerRequest) returns (UpdatePlayerResponse) {}
 }

@@ -34,17 +34,39 @@ class RosterServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.GetPlayers = channel.unary_unary(
-                '/RosterService/GetPlayers',
-                request_serializer=roster__pb2.PlayerFilter.SerializeToString,
+        self.GetClubs = channel.unary_unary(
+                '/RosterService/GetClubs',
+                request_serializer=roster__pb2.GetClubsRequest.SerializeToString,
+                response_deserializer=roster__pb2.ClubList.FromString,
+                _registered_method=True)
+        self.GetPlayersByClub = channel.unary_unary(
+                '/RosterService/GetPlayersByClub',
+                request_serializer=roster__pb2.GetPlayersByClubRequest.SerializeToString,
                 response_deserializer=roster__pb2.PlayerList.FromString,
+                _registered_method=True)
+        self.UpdatePlayer = channel.unary_unary(
+                '/RosterService/UpdatePlayer',
+                request_serializer=roster__pb2.UpdatePlayerRequest.SerializeToString,
+                response_deserializer=roster__pb2.UpdatePlayerResponse.FromString,
                 _registered_method=True)
 
 
 class RosterServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def GetPlayers(self, request, context):
+    def GetClubs(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetPlayersByClub(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdatePlayer(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -53,10 +75,20 @@ class RosterServiceServicer(object):
 
 def add_RosterServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'GetPlayers': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetPlayers,
-                    request_deserializer=roster__pb2.PlayerFilter.FromString,
+            'GetClubs': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetClubs,
+                    request_deserializer=roster__pb2.GetClubsRequest.FromString,
+                    response_serializer=roster__pb2.ClubList.SerializeToString,
+            ),
+            'GetPlayersByClub': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPlayersByClub,
+                    request_deserializer=roster__pb2.GetPlayersByClubRequest.FromString,
                     response_serializer=roster__pb2.PlayerList.SerializeToString,
+            ),
+            'UpdatePlayer': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdatePlayer,
+                    request_deserializer=roster__pb2.UpdatePlayerRequest.FromString,
+                    response_serializer=roster__pb2.UpdatePlayerResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -70,7 +102,7 @@ class RosterService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def GetPlayers(request,
+    def GetClubs(request,
             target,
             options=(),
             channel_credentials=None,
@@ -83,9 +115,63 @@ class RosterService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/RosterService/GetPlayers',
-            roster__pb2.PlayerFilter.SerializeToString,
+            '/RosterService/GetClubs',
+            roster__pb2.GetClubsRequest.SerializeToString,
+            roster__pb2.ClubList.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetPlayersByClub(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/RosterService/GetPlayersByClub',
+            roster__pb2.GetPlayersByClubRequest.SerializeToString,
             roster__pb2.PlayerList.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdatePlayer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/RosterService/UpdatePlayer',
+            roster__pb2.UpdatePlayerRequest.SerializeToString,
+            roster__pb2.UpdatePlayerResponse.FromString,
             options,
             channel_credentials,
             insecure,

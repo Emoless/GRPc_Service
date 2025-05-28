@@ -1,41 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 
 <head>
-    <title>Список игроков</title>
+    <meta charset="UTF-8">
+    <title>Игроки клуба {{ club_id }}</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        [contenteditable="true"]:focus {
+            background-color: #ffffcc;
+            outline: none;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Список игроков</h1>
-    <table border="1">
+    <h1>Игроки клуба {{ club_id }}</h1>
+    <table>
         <tr>
-            <th>Player ID</th>
-            <th>Jersey</th>
-            <th>First Name</th>
-            <th>Surname</th>
-            <th>Position</th>
-            <th>Birthday</th>
-            <th>Weight</th>
-            <th>Height</th>
-            <th>Birth City</th>
-            <th>Birth State</th>
+            <th>ИД игрока</th>
+            <th>Номер</th>
+            <th>Имя</th>
+            <th>Фамилия</th>
+            <th>Позиция</th>
+            <th>Дата рождения</th>
+            <th>Вес</th>
+            <th>Рост</th>
+            <th>Город рождения</th>
+            <th>Штат/Регион</th>
+            <th>Действие</th>
         </tr>
         {% for player in players %}
         <tr>
-            <td>{{ player[0] }}</td>
-            <td>{{ player[1] }}</td>
-            <td>{{ player[2] }}</td>
-            <td>{{ player[3] }}</td>
-            <td>{{ player[4] }}</td>
-            <td>{{ player[5] }}</td>
-            <td>{{ player[6] }}</td>
-            <td>{{ player[7] }}</td>
-            <td>{{ player[8] }}</td>
-            <td>{{ player[9] }}</td>
+            <td>{{ player.playerid }}</td>
+            <td contenteditable="true">{{ player.jersey }}</td>
+            <td contenteditable="true">{{ player.fname }}</td>
+            <td contenteditable="true">{{ player.sname }}</td>
+            <td contenteditable="true">{{ player.position }}</td>
+            <td contenteditable="true">{{ player.birthday }}</td>
+            <td contenteditable="true">{{ player.weight }}</td>
+            <td contenteditable="true">{{ player.height }}</td>
+            <td contenteditable="true">{{ player.birthcity }}</td>
+            <td contenteditable="true">{{ player.birthstate }}</td>
+            <td><button onclick="savePlayer('{{ player.playerid }}', this)">Сохранить</button></td>
         </tr>
         {% endfor %}
     </table>
-    <a href="/">Назад</a>
+    <script>
+        function savePlayer(playerid, button) {
+            var row = button.parentNode.parentNode;
+            var cells = row.getElementsByTagName('td');
+            var playerData = {
+                playerid: playerid,
+                jersey: cells[1].innerText,
+                fname: cells[2].innerText,
+                sname: cells[3].innerText,
+                position: cells[4].innerText,
+                birthday: cells[5].innerText,
+                weight: cells[6].innerText,
+                height: cells[7].innerText,
+                birthcity: cells[8].innerText,
+                birthstate: cells[9].innerText,
+                ClubID: '{{ club_id }}'
+            };
+            $.ajax({
+                type: 'POST',
+                url: '/update_player',
+                data: playerData,
+                success: function (response) {
+                    if (response.status === 'success') {
+                        alert('Игрок успешно обновлен');
+                    } else {
+                        alert('Ошибка при обновлении игрока');
+                    }
+                },
+                error: function () {
+                    alert('Ошибка связи с сервером');
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
