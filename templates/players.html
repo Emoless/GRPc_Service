@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Список игроков</title>
+</head>
+
+<body>
+    <h1>Список игроков</h1>
+    <table border="1">
+        <tr>
+            <th>Player ID</th>
+            <th>Jersey</th>
+            <th>First Name</th>
+            <th>Surname</th>
+            <th>Position</th>
+            <th>Birthday</th>
+            <th>Weight</th>
+            <th>Height</th>
+            <th>Birth City</th>
+            <th>Birth State</th>
+        </tr>
+        {% for player in players %}
+        <tr>
+            <td>{{ player[0] }}</td>
+            <td>{{ player[1] }}</td>
+            <td>{{ player[2] }}</td>
+            <td>{{ player[3] }}</td>
+            <td>{{ player[4] }}</td>
+            <td>{{ player[5] }}</td>
+            <td>{{ player[6] }}</td>
+            <td>{{ player[7] }}</td>
+            <td>{{ player[8] }}</td>
+            <td>{{ player[9] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="/">Назад</a>
+</body>
+
+</html>
